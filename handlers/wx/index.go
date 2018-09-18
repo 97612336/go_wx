@@ -32,13 +32,10 @@ func Check_wx_signature(signature string,timestamp string,nonce string) bool{
 	wx_conf:=util.Get_wx_conf()
 	//获取token
 	token:=wx_conf.App_token
-	fmt.Println("token是：",token)
 	var s string
-	//s=timestamp+nonce+token
-	s_list:=[]string{signature,timestamp,nonce}
-	fmt.Println(s_list)
+	// 把要进行对比的参数进行排序
+	s_list:=[]string{token,timestamp,nonce}
 	sort.Strings(s_list)
-	fmt.Println(s_list)
 	s=s_list[0]+s_list[1]+s_list[2]
 	fmt.Println(s)
 	//运行go中的hash算法
