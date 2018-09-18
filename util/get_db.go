@@ -125,7 +125,7 @@ func Set_redis(key string, value string, times ...string) {
 }
 
 //获取redis的值
-func Get_redis(key string) string {
+func Get_redis(key string) (string,error) {
 	//获取配置信息,连接到redis
 	redis_conf := Get_redis_conf()
 	//连接到redis数据库
@@ -134,7 +134,7 @@ func Get_redis(key string) string {
 	defer red.Close()
 	res, err := redis.String(red.Do("get", key))
 	CheckErr(err)
-	return res
+	return res,err
 }
 
 //banner_novel的配置
