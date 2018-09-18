@@ -37,7 +37,6 @@ func Check_wx_signature(signature string,timestamp string,nonce string) bool{
 	s_list:=[]string{token,timestamp,nonce}
 	sort.Strings(s_list)
 	s=s_list[0]+s_list[1]+s_list[2]
-	fmt.Println(s)
 	//运行go中的hash算法
 	h:=sha1.New()
 	_,err:=h.Write([]byte(s))
