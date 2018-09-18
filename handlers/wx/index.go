@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 // 微信公众号的接口
@@ -25,6 +26,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("验证出错！")
 		}
+		Wx_menu()
 	}
 }
 
@@ -52,7 +54,7 @@ func Check_wx_signature(signature string, timestamp string, nonce string) bool {
 
 // 获取access_token的方法
 func Get_access_token() string {
-	old_wx_toekn, one_err := util.Get_redis("wx_token2")
+	old_wx_toekn, one_err := util.Get_redis("wx_token")
 	if one_err == nil {
 		return old_wx_toekn
 	}
@@ -72,4 +74,49 @@ func Get_access_token() string {
 	wx_token := one_access_token.Access_token
 	util.Set_redis("wx_token", wx_token, "6000")
 	return wx_token
+}
+
+
+//自定义菜单的方法
+func Wx_menu(){
+	access_token:=Get_access_token()
+	url:="https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+access_token
+	json_str:=`
+	 {
+     "button":[
+     {    
+          "type":"click",
+          "name":"今日歌曲",
+          "key":"V1001_TODAY_MUSIC"
+      },
+      {
+           "name":"菜单",
+           "sub_button":[
+           {    
+               "type":"view",
+               "name":"搜索",
+               "url":"http://www.soso.com/"
+            },
+            {
+                 "type":"miniprogram",
+                 "name":"wxa",
+                 "url":"http://mp.weixin.qq.com",
+                 "appid":"wx286b93c14bbf93aa",
+                 "pagepath":"pages/lunar/index"
+             },
+            {
+               "type":"click",
+               "name":"赞一下我们",
+               "key":"V1001_GOOD"
+            }]
+       }]
+ }
+`
+
+	resp,err:=http.Post(url,"application/x-www-form-urlencoded",strings.NewReader(json_str))
+	util.CheckErr(err)
+	defer resp.Body.Close()
+	res_body,body_err:=ioutil.ReadAll(resp.Body)
+	util.CheckErr(body_err)
+	fmt.Println(string(res_body))
 }
