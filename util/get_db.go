@@ -2,14 +2,14 @@ package util
 
 import (
 	"database/sql"
-	"io/ioutil"
 	"encoding/json"
-	"log"
-	"os/user"
 	"fmt"
-	"go_wx/models"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
+	"go_wx/models"
+	"io/ioutil"
+	"log"
+	"os/user"
 	"time"
 )
 
@@ -26,6 +26,17 @@ func Get_home_path() string {
 	}
 	user_home := current_user.HomeDir
 	return user_home
+}
+
+//获取微信的配置文件
+func Get_wx_conf() models.Wx_Gzh {
+	home_path := Get_home_path()
+	wx_conf_path := home_path + "/conf/wx_conf"
+	data, err := ioutil.ReadFile(wx_conf_path)
+	CheckErr(err)
+	var wx_conf models.Wx_Gzh
+	json.Unmarshal(data, &wx_conf)
+	return wx_conf
 }
 
 //获取mysql对象
