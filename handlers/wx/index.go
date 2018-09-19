@@ -113,7 +113,16 @@ func Get_access_token() string {
 //自定义菜单的方法
 func Wx_menu() {
 	access_token := Get_access_token()
+	wx_conf:=util.Get_wx_conf()
 	url := "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=" + access_token
+	// 要跳转的url
+	go_to_url_tmp := "https://www.bigbiy.com/wx/go/page/v1"
+	// 转化为微信认识的url
+	go_to_url := "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s" +
+		"&redirect_uri=%s&response_type=code&scope=snsapi_base&state=STATE#wechat_redirect"
+	// 往url里填充数据
+	new_go_to_url:=fmt.Sprintf(go_to_url,wx_conf.Appid,go_to_url_tmp)
+	fmt.Println(new_go_to_url)
 	json_str := `
 	 {
      "button":[
@@ -135,11 +144,18 @@ func Wx_menu() {
                "name":"点赞",
                "key":"two_two"
             }]
-       }]
+       },
+		{    
+          "type":"view",
+          "name":"页面跳转",
+          "url":"%s"
+      }
+		]
  }
 `
-
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader(json_str))
+	another_go_to_url:="https://www.baidu.com"
+	new_json_str := fmt.Sprintf(json_str, another_go_to_url)
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader(new_json_str))
 	util.CheckErr(err)
 	defer resp.Body.Close()
 	res_body, body_err := ioutil.ReadAll(resp.Body)
