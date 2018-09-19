@@ -26,6 +26,41 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("验证出错！")
 		}
+	} else if r.Method == "POST" {
+		// 读取请求的body
+		one_envent := util.Read_xml_file(r)
+		// 获取请求的类型
+		msg_type := one_envent.Msg_type
+		// 获取事件类型
+		event := one_envent.Event
+		// 获取事件key
+		event_key := one_envent.Event_key
+		current_time := util.Get_current_time_num()
+		fmt.Println("+++++++++++++++++++++++++")
+		if msg_type == "event" {
+			// 如果是点击事件，就执行点击事件的操作
+			if event == "CLICK" {
+				if event_key == "one" {
+					content := "这是在测试今日话语！"
+					xml_str := util.Response_xml(one_envent.From_user_name, one_envent.To_user_name, current_time, content)
+					w.Write([]byte(xml_str))
+					return
+				} else if event_key == "two_two" {
+					content := "这是在测试点赞！"
+					xml_str := util.Response_xml(one_envent.From_user_name, one_envent.To_user_name, current_time, content)
+					w.Write([]byte(xml_str))
+					return
+				}
+			}
+		} else if msg_type == "text" {
+			// 得到用户发送的消息
+			user_words := one_envent.Content
+			content := util.Talk_with_robot(user_words, "123123")
+			xml_str := util.Response_xml(one_envent.From_user_name, one_envent.To_user_name, current_time, content)
+			fmt.Println(xml_str)
+			w.Write([]byte(xml_str))
+			return
+		}
 	}
 }
 
@@ -60,7 +95,6 @@ func Get_access_token() string {
 	// redis中如果没有，就执行获取操作
 	wx_conf := util.Get_wx_conf()
 	appid := wx_conf.Appid
-	fmt.Println(appid)
 	appsecret := wx_conf.App_secret
 	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + appsecret
 	res, err := http.Get(url)
@@ -76,18 +110,17 @@ func Get_access_token() string {
 	return wx_token
 }
 
-
 //自定义菜单的方法
-func Wx_menu(){
-	access_token:=Get_access_token()
-	url:="https://api.weixin.qq.com/cgi-bin/menu/create?access_token="+access_token
-	json_str:=`
+func Wx_menu() {
+	access_token := Get_access_token()
+	url := "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=" + access_token
+	json_str := `
 	 {
      "button":[
      {    
           "type":"click",
-          "name":"今日歌曲",
-          "key":"V1001_TODAY_MUSIC"
+          "name":"今日话语",
+          "key":"one"
       },
       {
            "name":"菜单",
@@ -99,17 +132,21 @@ func Wx_menu(){
             },
             {
                "type":"click",
-               "name":"赞一下我们",
-               "key":"V1001_GOOD"
+               "name":"点赞",
+               "key":"two_two"
             }]
        }]
  }
 `
 
-	resp,err:=http.Post(url,"application/x-www-form-urlencoded",strings.NewReader(json_str))
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", strings.NewReader(json_str))
 	util.CheckErr(err)
 	defer resp.Body.Close()
-	res_body,body_err:=ioutil.ReadAll(resp.Body)
+	res_body, body_err := ioutil.ReadAll(resp.Body)
 	util.CheckErr(body_err)
-	fmt.Println(string(res_body))
+	var err_meg models.Error_message
+	util.Json_to_object(string(res_body), &err_meg)
+	if err_meg.Err_code != 0 {
+		fmt.Println("自定义菜单出错")
+	}
 }

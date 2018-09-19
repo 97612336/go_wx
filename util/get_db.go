@@ -3,6 +3,7 @@ package util
 import (
 	"database/sql"
 	"encoding/json"
+	"feidu/util"
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
@@ -26,6 +27,18 @@ func Get_home_path() string {
 	}
 	user_home := current_user.HomeDir
 	return user_home
+}
+
+
+// 获取聊天机器人的配置文件
+func Get_robot()models.Robot_conf  {
+	var one_robot models.Robot_conf
+	home_path:=Get_home_path()
+	robot_conf_path:=home_path+"/conf/robot.conf"
+	data,err:=ioutil.ReadFile(robot_conf_path)
+	util.CheckErr(err)
+	json.Unmarshal(data,&one_robot)
+	return one_robot
 }
 
 //获取微信的配置文件

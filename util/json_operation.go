@@ -2,9 +2,12 @@ package util
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
-	"net/http"
+	"go_wx/models"
 	"html/template"
+	"io/ioutil"
+	"net/http"
 )
 
 //将类型转化为字符串json
@@ -19,7 +22,7 @@ func Get_json_string(m interface{}) string {
 }
 
 //将字符串json转化为类型
-func Json_to_object(json_str string, i interface{}){
+func Json_to_object(json_str string, i interface{}) {
 	json.Unmarshal([]byte(json_str), i)
 }
 
@@ -44,4 +47,29 @@ func Render_template(w http.ResponseWriter, html_path string, data interface{}) 
 	tmpl, _ := template.ParseFiles(html_path)
 	tmpl.Execute(w, data)
 	return
+}
+
+// 读取xml的方法
+func Read_xml_file(r *http.Request) models.WX_event {
+	data, err := ioutil.ReadAll(r.Body)
+	var one_model models.WX_event
+	CheckErr(err)
+	fmt.Println(string(data))
+	xml.Unmarshal(data, &one_model)
+	return one_model
+}
+
+// 返回xml的方法
+func Response_xml(tousername string, from_username string, create_time int, content string) string {
+	xml_str := `
+		<xml> 
+		<ToUserName><![CDATA[%s]]></ToUserName> 
+		<FromUserName><![CDATA[%s]]></FromUserName> 
+		<CreateTime>%d</CreateTime> 
+		<MsgType><![CDATA[text]]></MsgType> 
+		<Content><![CDATA[%s]]></Content>
+		</xml>
+`
+	new_xml_str := fmt.Sprintf(xml_str, tousername, from_username, create_time, content)
+	return new_xml_str
 }
