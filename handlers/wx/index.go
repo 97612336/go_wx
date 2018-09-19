@@ -26,7 +26,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("验证出错！")
 		}
-		Wx_menu()
 	}
 }
 
@@ -61,6 +60,7 @@ func Get_access_token() string {
 	// redis中如果没有，就执行获取操作
 	wx_conf := util.Get_wx_conf()
 	appid := wx_conf.Appid
+	fmt.Println(appid)
 	appsecret := wx_conf.App_secret
 	url := "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + appsecret
 	res, err := http.Get(url)
@@ -97,13 +97,6 @@ func Wx_menu(){
                "name":"搜索",
                "url":"http://www.soso.com/"
             },
-            {
-                 "type":"miniprogram",
-                 "name":"wxa",
-                 "url":"http://mp.weixin.qq.com",
-                 "appid":"wx286b93c14bbf93aa",
-                 "pagepath":"pages/lunar/index"
-             },
             {
                "type":"click",
                "name":"赞一下我们",
